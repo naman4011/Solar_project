@@ -1,0 +1,90 @@
+# Study
+
+# Finding if there is any specific trend in the variation of YearAvgI_HP, YearAvgI_IncP
+#YearAvgI_B,OptSlopeAngle and Ratio_D_G per month related to the location(ie. Latitude, longitude, Elevation)
+
+# Importing the required libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Importing the dataset
+dataset = pd.read_csv('Cluster.csv')
+month_data = pd.read_csv('M_Solar_data.csv')
+M_X = month_data.iloc[:,:].values
+X = dataset.iloc[:,:].values
+X2 = dataset.iloc[:,4:].values
+
+#Using the elbow method to find the optimal number of clusters
+from sklearn.cluster import KMeans
+
+wcss = []
+
+for j in range(1,6):
+    kmeans = KMeans(n_clusters = j , max_iter = 300 , n_init = 10 , init = 'k-means++' , random_state = 0)
+    kmeans.fit(X2)
+    wcss.append(kmeans.inertia_)
+'''plt.plot(range(1,6) , wcss)
+plt.title('The Elbow Method')
+plt.xlabel('Number of clusters')
+plt.ylabel('wcss')
+plt.show()
+'''
+
+#Applying the Kmeans to company info dataset
+kmeans = KMeans(n_clusters = 2 , max_iter = 300 , init = 'k-means++' , n_init = 10 , random_state = 0)
+y_kmeans = kmeans.fit_predict(X2)
+
+
+'''# Visualising the clusters
+plt.scatter(X[y_kmeans == 0, 0], X[y_kmeans == 0, 1], s = 10, c = 'red', label = 'Cluster 1')
+plt.scatter(X[y_kmeans == 1, 0], X[y_kmeans == 1, 1], s = 10, c = 'blue', label = 'Cluster 2')
+#plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s = 300, c = 'yellow', label = 'Centroids')
+plt.title('Cluster of variation')
+plt.xlabel('Longitude')
+plt.ylabel('latitude')
+plt.legend()
+plt.show()
+'''
+
+# Now copying the number of cluter for each latitude onto the Month data 
+
+cluster1_points = X[y_kmeans==0,:2]
+cluster2_points = X[y_kmeans==1,:2]
+dataarray1 = [];dataarray2 = []
+for i in range(len(cluster1_points[:,1])):
+    val1=cluster1_points[i,0];val2 = cluster1_points[i,1]
+    for j in range(len(M_X[:,1])):
+        if M_X[j,1]==val1 and M_X[j,2]==val2:
+            dataarray1.append(list(M_X[j,:]))
+        
+for i in range(len(cluster2_points[:,1])):
+    val1=cluster2_points[i,0];val2 = cluster2_points[i,1]
+    for j in range(len(M_X[:,1])):
+        if M_X[j,1]==val1 and M_X[j,2]==val2:
+            dataarray2.append(list(M_X[j,:]))
+    
+dataset1 = np.array(dataarray1)
+dataset2 = np.array(dataarray2)
+data1 = {'Month':dataset1[:,0],
+         'Longitudes':dataset1[:,1],
+         'Latitudes':dataset1[:,2],
+         'Elevation':dataset1[:,3],
+         'ExtSR':dataset1[:,4],
+        'MonthAvgI_HP':dataset1[:,5],
+        'MonthAvgI_IncP':dataset1[:,6],
+        'OptSlopeAngle':dataset1[:,7],
+        'MonthAvgI_B':dataset1[:,8],
+        'Ratio_D_G':dataset1[:,9]}
+dataframe1 = pd.DataFrame(data1)
+data2 = {'Month':dataset2[:,0],
+         'Longitudes':dataset2[:,1],
+         'Latitudes':dataset2[:,2],
+         'Elevation':dataset2[:,3],
+         'ExtSR':dataset2[:,4],
+        'MonthAvgI_HP':dataset2[:,5],
+        'MonthAvgI_IncP':dataset2[:,6],
+        'OptSlopeAngle':dataset2[:,7],
+        'MonthAvgI_B':dataset2[:,8],
+        'Ratio_D_G':dataset2[:,9]}
+dataframe2 = pd.DataFrame(data2)
